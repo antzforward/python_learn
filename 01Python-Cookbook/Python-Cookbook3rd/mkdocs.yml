@@ -1,0 +1,15 @@
+site_name: Python Cookbook 3rd Notes
+nav:
+  - Home: index.md
+theme:
+  name: 'material'
+  language: 'en'
+  palette:
+    primary: 'indigo'
+    accent: 'pink'
+  logo: 'assets/logo.png'
+  favicon: 'assets/favicon.png'
+
+extra:
+  css: [extra.css]
+  javascript: [extra.js]
