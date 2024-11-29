@@ -1,12 +1,12 @@
-p=(4,5)
+p=(4,5) # 这是个tuple
 x,y=p
 print(x,y)
-data = ['ACME', 50, 91.1, (2012, 12, 21)]
+data = ['ACME', 50, 91.1, (2012, 12, 21)]#这是sequence 形式,第四个是tuple
 name, shares, price, date = data
 print(name)
 print(date)
 
-name, shares, price, (year, mon, day) = data
+name, shares, price, (year, mon, day) = data #解析成多个变量和一个tuple，同时tuple也解析了
 print(name)
 print(year)
 print(day)
@@ -23,5 +23,5 @@ a, b, c, d, e = s
 print(a,b,e,end='\n')
 
 data = [ 'ACME', 50, 91.1, (2012, 12, 21) ]
-_, shares, price, _ = data
+_, shares, price, _ = data # _ 可以认为是不要的变量，占位的作用，变量数量还要匹配到数量
 print(shares,price,end='\n')
