@@ -3,6 +3,7 @@
 most_common 跟Find n largest or nsmallest 这个内容差不多
 但是它增加了很多专用功能，建议还是记住用Counter吧。
 '''
+import numpy as np
 
 words = [
  'look', 'into', 'my', 'eyes', 'look', 'into', 'my', 'eyes',
@@ -42,3 +43,9 @@ print( word_counts.total() )#45
 a = Counter(words)
 b = Counter(morewords)
 print( a + b )
+
+## 当然numpy也可以用的
+arr = np.array( words )
+unique_elements, unique_counter = np.unique(arr,return_counts=True)
+print("Unique elements:", unique_elements)
+print("Unique elements Count:", unique_counter)

@@ -5,7 +5,10 @@
 Lazy Evaluation Generator 是产生一个IEnumerable 不会占用大量内存。
 注意这个yield关键字的使用，恩，不需要写成yield return的模式。
 另外这里声明的dedupe的优点是去重复但是不改变顺序。
+
+这个似乎对应的是Linq的Distinct
 """
+import numpy as np
 
 
 def dedupe(items) :
@@ -19,7 +22,8 @@ def dedupe(items) :
 a = [1, 5, 2, 1, 9, 1, 5, 10]
 print(list(dedupe(a)))  #[1, 5, 2, 9, 10]
 print(set(a))  #{1, 2, 5, 9, 10}
-
+import numpy
+print(np.unique(np.array(a))) #等同于C#里面的Distinct的用法
 
 # 比如用惰性计算的生成器的写法
 # 写个简单的，从1到N个的fibonacci的数列生成器,序号从0 开始，第一个数字为0
