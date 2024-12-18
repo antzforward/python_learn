@@ -32,14 +32,22 @@ heads = [f"{i:02}" for i in range(1, 20)]
 # 遍历父目录中的所有项
 for item in parent_dir.iterdir():
     # 检查该项是否以指定头部开头并且是一个目录
-    if any(item.name.startswith(head) for head in heads) and item.is_dir():
+    if any(item.name.startswith(head) for head in heads) and  item.is_dir()  :
         # 输出绝对路径
         print(item.resolve())
 
+print('*-+'*20)
 # 简化版本，直接在打印时过滤和处理
 parent_dir = Path('..')
 heads = [f"{i:02}" for i in range(1, 20)]
-print(*[item.resolve() for item in parent_dir.iterdir() if any(item.name.startswith(head) for head in heads) and item.is_dir()], sep='\n')
+print(*[item.resolve() for item in parent_dir.iterdir() if any(item.name.startswith(head) for head in heads) ], sep='\n')
+print('*-+'*20)
+
+# 把文件夹中所有下的py文件都打出来
+print(*[ item.resolve()  for item in parent_dir.glob('**/*')
+         if item.is_file()
+         and item.name.endswith('.py') ], sep='\n')
+print('*-+'*20)
 
 '''
 for name in filenames:
