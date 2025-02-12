@@ -1,12 +1,15 @@
 import csv
-import sys
 from collections import defaultdict
-import os
 import pathlib
 import subprocess
-import re
+import  asyncio
 
-def check_tab_file(filename):
+async def check_tab_file(filename):
+    '''
+    异步处理单个文件
+    :param filename:
+    :return
+    '''
     # 读取前四行
     with open(filename, 'r', encoding='utf-8') as f:
         reader = csv.reader(f, delimiter='\t')
@@ -18,17 +21,17 @@ def check_tab_file(filename):
         pkey_columns = [i for i, val in enumerate(headers[1]) if val.startswith('PKEY')]
 
         if not pkey_columns:
-            print(f"{filename}: 错误：未找到PKEY定义")
-            return False
+            return False,f"{filename}: 错误：未找到PKEY定义"
 
         # 创建字典记录行号
         key_dict = defaultdict(list)
         duplicates_found = False
 
+        results = []
         # 从第五行开始检查
         for line_num, row in enumerate(reader, start=5):
             if len(row) < max(pkey_columns) + 1:
-                print(f"行 {line_num} 列数不足")
+                results.append(f"行 {line_num} 列数不足")
                 continue
 
             # 生成组合Key
@@ -36,7 +39,7 @@ def check_tab_file(filename):
 
             # 检查Key有效性
             if any(not k.strip() for k in key):
-                print(f"{filename}: 行 {line_num} 包含空Key值")
+                results.append(f"行 {line_num} 包含空Key值")
                 continue
 
             # 记录重复情况
@@ -48,27 +51,26 @@ def check_tab_file(filename):
 
         # 输出重复结果
         if duplicates_found:
-            print(f"{filename}:发现重复Key：{{")
+            results.append(f"发现重复Key：{{")
             for key, lines in key_dict.items():
                 if len(lines) > 1:
                     key_str = ' + '.join(key)
-                    print(f"\tKey '{key_str}' 重复出现在行：{', '.join(map(str, lines))}")
-            print(f"}}")
-            return False
+                    results.append(f"\tKey '{key_str}' 重复出现在行：{', '.join(map(str, lines))}")
+            results.append(f"}}")
+        if len(results) == 0:
+            return False,f"{filename}:{'\n'.join(results)}"
         else:
-            print(f"{filename}:所有Key值唯一")
-            return True
+            return True,f"{filename}:所有Key值唯一"
 
-def main():
+async def main():
     files_dict = {}
     pattern = r'\.tab$'
     # fd -a -t d ^[0-9]+
     out_text = subprocess.check_output(['fd','-a','-t','f',pattern]).decode('utf-8')
     file_list = ( pathlib.Path(f) for f in out_text.split('\n') if f !='' )
-    for filename in file_list:
-        check_tab_file( filename )
-
-
-
+    tasks = [check_tab_file(filename ) for filename in file_list]
+    results = await  asyncio.gather( * tasks )
+    for result,log in results:
+        print( log )
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
