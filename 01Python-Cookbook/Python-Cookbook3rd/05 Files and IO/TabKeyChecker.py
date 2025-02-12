@@ -2,7 +2,8 @@ import csv
 from collections import defaultdict
 import pathlib
 import subprocess
-import  asyncio
+import asyncio
+import sys
 
 async def check_tab_file(filename):
     '''
@@ -62,15 +63,18 @@ async def check_tab_file(filename):
         else:
             return True,f"{filename}:所有Key值唯一"
 
-async def main():
+async def main(dir_name='.'):
     files_dict = {}
     pattern = r'\.tab$'
     # fd -a -t d ^[0-9]+
-    out_text = subprocess.check_output(['fd','-a','-t','f',pattern]).decode('utf-8')
+    out_text = subprocess.check_output(['fd','-a','-t','f',pattern,dir_name]).decode('utf-8')
     file_list = ( pathlib.Path(f) for f in out_text.split('\n') if f !='' )
     tasks = [check_tab_file(filename ) for filename in file_list]
     results = await  asyncio.gather( * tasks )
     for result,log in results:
         print( log )
 if __name__ == "__main__":
-    asyncio.run(main())
+    if len(sys.argv) != 2:
+        print("使用方法：python TabKeyCheck.py .")
+        sys.exit(1)
+    asyncio.run(main(sys.argv[1]))
