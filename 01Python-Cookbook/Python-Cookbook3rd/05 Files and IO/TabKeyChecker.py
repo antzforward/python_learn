@@ -5,6 +5,7 @@ import pathlib
 import subprocess
 import asyncio
 import sys
+import psutil
 
 async def check_tab_file(filename,encode='utf-8'):
     '''
@@ -91,9 +92,15 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("使用方法：python TabKeyCheck.py .")
         sys.exit(1)
+    process = psutil.Process()
+    # 获取内存信息
+    mem_info = process.memory_info()
+    print(f"Memory Usage: {mem_info.rss / 1024 ** 2:.2f} MB")  # RSS为常驻集大小
     start_time = time.time()
     asyncio.run(main(sys.argv[1]))
     end_time = time.time()
     # 计算并打印总耗时
     total_time = end_time - start_time
     print(f"总体消耗时间: {total_time} 秒")
+    mem_info = process.memory_info()
+    print(f"Memory Usage: {mem_info.rss / 1024 ** 2:.2f} MB")  # RSS为常驻集大小
