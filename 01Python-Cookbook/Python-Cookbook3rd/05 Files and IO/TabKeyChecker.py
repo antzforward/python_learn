@@ -7,14 +7,13 @@ import asyncio
 import sys
 import psutil
 
-async def check_tab_file(filename,encode='utf-8'):
+async def check_tab_file(filename,index=0):
     '''
     异步处理单个文件
     :param filename:
     :return
     '''
     encodes = ['utf-8','utf-16','gb18030','ansi']
-    index = encodes.index( encode )
     try:
         # 读取前四行
         with open(filename, 'r', encoding=encodes[index]) as f:
@@ -67,14 +66,9 @@ async def check_tab_file(filename,encode='utf-8'):
                 return False,f"{filename}:{result_str}"
             else:
                 return True,f"{filename}:所有Key值唯一"
-    except UnicodeDecodeError as e:
+    except UnicodeError as e: #UnicodeError or UnicodeEncodeError as e: 可以用or哦，但是他们有继承关系，选父类型即可
         if index + 1 < len(encodes):
-            return await check_tab_file(filename, encodes[index+1])
-        else:
-            return False, str({"status": "error", "filename": filename, "message": f"未知错误: {str(e)}"})
-    except UnicodeError as e:
-        if index + 1 < len(encodes):
-            return await check_tab_file(filename, encodes[index+1])
+            return await check_tab_file(filename, index+1)
         else:
             return False, str({"status": "error", "filename": filename, "message": f"未知错误: {str(e)}"})
     except Exception as e:
@@ -84,23 +78,21 @@ async def main(dir_name='.'):
     pattern = r'\.tab$'
     out_text = subprocess.check_output(['fd','-a','-t','f',pattern,dir_name]).decode('utf-8')
     file_list = ( pathlib.Path(f) for f in out_text.split('\n') if f !='' )
-    tasks = [check_tab_file(filename ) for filename in file_list]
+    tasks = [check_tab_file(filename) for filename in file_list]
     results = await  asyncio.gather( * tasks )
     for result,log in results:
         print( log )
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("使用方法：python TabKeyCheck.py .")
+        print("使用方法：python TabKeyCheck.py tab_folder_path")
         sys.exit(1)
     process = psutil.Process()
     # 获取内存信息
     mem_info = process.memory_info()
-    print(f"Memory Usage: {mem_info.rss / 1024 ** 2:.2f} MB")  # RSS为常驻集大小
     start_time = time.time()
     asyncio.run(main(sys.argv[1]))
     end_time = time.time()
     # 计算并打印总耗时
     total_time = end_time - start_time
     print(f"总体消耗时间: {total_time} 秒")
-    mem_info = process.memory_info()
-    print(f"Memory Usage: {mem_info.rss / 1024 ** 2:.2f} MB")  # RSS为常驻集大小
+    print(f"使用了内存: {(process.memory_info().rss - mem_info.rss) / 1024 ** 2:.2f} MB")  # RSS为常驻集大小
