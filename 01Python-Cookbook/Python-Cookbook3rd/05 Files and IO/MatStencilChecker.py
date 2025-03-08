@@ -5,8 +5,6 @@ import asyncio
 import aiofiles
 import yaml
 import time
-import psutil
-from websockets.legacy import async_timeout
 from yaml import Loader, MappingNode
 from pathlib import Path
 
