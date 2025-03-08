@@ -4,6 +4,9 @@ import sys
 import asyncio
 import aiofiles
 import yaml
+import time
+import psutil
+from websockets.legacy import async_timeout
 from yaml import Loader, MappingNode
 from pathlib import Path
 
@@ -34,7 +37,7 @@ class UnityLoader(Loader):
             data.update(mapping)
 
         return data
-async def check_mat_stencil(mat_path: Path) -> tuple[bool, str]:
+async def check_mat_stencil(mat_path: Path,index:int) :
     try:
         async with aiofiles.open(mat_path, 'r', encoding='utf-8') as f:
             content = await f.read()
@@ -69,7 +72,9 @@ async def check_mat_stencil(mat_path: Path) -> tuple[bool, str]:
             for doc in docs:
                 # 筛选Material类型（_unity_type=21）
                 if doc.get('_unity_type') == 21:
-                    floats_list = doc.get('m_SavedProperties', {}).get('m_Floats', [])
+
+                    floats_list = doc.get('Material',{}).get('m_SavedProperties', {}).get('m_Floats', [])
+
                     floats = {}
                     if isinstance(floats_list, list):
                         for item in floats_list:
@@ -84,31 +89,72 @@ async def check_mat_stencil(mat_path: Path) -> tuple[bool, str]:
                             return False, f"{mat_path} 异常参数 {key}={actual}"
                     return True, ''
             return True, ''
-
     except Exception as e:
         return False, f"{mat_path} 解析失败: {str(e)}"
 
+
 async def main_task(dir_name='.'):
-    import psutil
-    import time
-    import subprocess
-    import pathlib
-    process = psutil.Process()
-    # 获取内存信息
-    mem_info = process.memory_info()
+    # 1. 准备阶段
+    mat_files = list(Path(dir_name).rglob('*.mat'))
+    total = len(mat_files)
+    progress_queue = asyncio.Queue()
+
+    # 2. 启动进度报告器（自动结束）
+    reporter = asyncio.create_task(
+        progress_reporter(total, progress_queue)
+    )
+
+    # 3. 执行核心任务
+    semaphore = asyncio.Semaphore(50)  # 固定并发数
+
+    async def worker(file_path, idx):
+        async with semaphore:
+            result = await check_mat_stencil(file_path, idx)
+            await progress_queue.put((idx, result))
+
+    # 使用固定线程池控制并发
+    tasks = [
+        asyncio.create_task(worker(f, i + 1))
+        for i, f in enumerate(mat_files)
+    ]
+
+    # 4. 等待完成并自动清理
+    await asyncio.gather(*tasks)
+    await progress_queue.put(None)  # 结束信号
+    await reporter
+
+
+async def progress_reporter(total: int, queue: asyncio.Queue):
+    """实时进度显示器"""
+    processed = 0
+    errors = []
     start_time = time.time()
-    pattern = r'\.mat$'
-    out_text = subprocess.check_output(['fd','-a','-t','f',pattern,dir_name]).decode('utf-8')
-    file_list = ( pathlib.Path(f) for f in out_text.split('\n') if f !='' )
-    tasks = [check_mat_stencil(filename) for filename in file_list]
-    results = await asyncio.gather( * tasks )
-    end_time = time.time()
-    # 计算并打印总耗时
-    total_time = end_time - start_time
-    print( f"总体消耗时间: {total_time} 秒", f"使用了内存: {(process.memory_info().rss - mem_info.rss) / 1024 ** 2:.2f} MB")
-    for result,log in results:
-        if not result:
-            print( log )
+
+    while processed < total:
+        item = await queue.get()
+        if item is None:
+            print(f"\n处理完成，成功率: {processed}/{total}")
+            break
+        idx, (status,msg) = item
+        processed += 1
+
+        # 计算实时速度
+        elapsed = time.time() - start_time
+        speed = processed / elapsed if elapsed > 0 else 0
+
+        # 动态进度条
+        progress = processed / total * 100
+        sys.stdout.write(
+            f"\r[{'#' * int(progress // 2):<50}] {progress:.1f}% | 已处理: {processed}/{total} | 速度: {speed:.1f} 文件/秒 | 最近状态：{'OK' if status else msg[:30]}")
+        sys.stdout.flush()
+
+        if not status:
+            errors.append((idx, msg))
+
+    # 最终报告
+    print(f"\n\n检测完成! 共发现 {len(errors)} 个异常文件")
+    for idx, err in errors:
+        print(f"#{idx}: {err}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
