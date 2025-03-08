@@ -5,6 +5,7 @@ import asyncio
 import time
 from io import StringIO
 import aiofiles
+import itertools
 import psutil
 from pathlib import Path
 async def  check_tab_file( tab_path:Path, index :int):
@@ -18,7 +19,7 @@ async def  check_tab_file( tab_path:Path, index :int):
                 reader = csv.reader(content, delimiter='\t')
 
                 # 读取表头
-                headers = [next(reader) for _ in range(4)]
+                headers = list(itertools.islice(reader, 4))
                 # 获取PKEY位置
                 pkey_columns = [i for i, val in enumerate(headers[1]) if val.startswith('PKEY') or val == 'FUnique()']
 
