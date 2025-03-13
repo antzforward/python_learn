@@ -1,10 +1,7 @@
-from checker_framework import CheckerBase
+from checker_framework import CheckerBase,main_task
 import asyncio
 import sys
-import time
 from pathlib import Path
-from abc import ABC, abstractmethod
-from collections import defaultdict
 import re
 import aiofiles
 import yaml
@@ -124,4 +121,4 @@ if __name__ == "__main__":
 
     # 初始化检查器并运行主任务
     checker = MatStencilChecker()  # 只需切换子类
-    asyncio.run(checker.main_task(target_folder))
+    asyncio.run(main_task(checker,target_folder))

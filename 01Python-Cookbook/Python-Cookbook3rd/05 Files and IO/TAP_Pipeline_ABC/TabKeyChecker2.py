@@ -1,4 +1,4 @@
-from checker_framework import CheckerBase
+from checker_framework import CheckerBase,main_task
 from pathlib import Path
 import asyncio
 import sys
@@ -90,4 +90,4 @@ if __name__ == "__main__":
         print(f"错误：{target_folder} 不是有效目录")
         sys.exit(1)
     checker = TabKeyChecker()  # 只需切换子类
-    asyncio.run(checker.main_task(target_folder))
+    asyncio.run(main_task(checker,target_folder))
