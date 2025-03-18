@@ -22,6 +22,9 @@ s = 'Hello'
 a, b, c, d, e = s
 print(a,b,e,end='\n')
 
+a,*b,c = 'Hello'
+print(a,c,end='\n')#H o
+
 data = [ 'ACME', 50, 91.1, (2012, 12, 21) ]
 _, shares, price, _ = data # _ 可以认为是不要的变量，占位的作用，变量数量还要匹配到数量
-print(shares,price,end='\n')
+print(shares,price,end='\n') #50 91.1

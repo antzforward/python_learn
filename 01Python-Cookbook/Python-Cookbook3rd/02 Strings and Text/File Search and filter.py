@@ -128,7 +128,7 @@ os_walk_res6 = set()
 dir_re = re.compile(r'\\\d{2,3}[^.0-9\/]+\\')
 fire_re= re.compile(r'\d{2,3}[^.]*\.[A-Za-z0-9]{2,}$')
 
-@profile()
+@profile
 def fb_find_all_root( top ):
     out_text = subprocess.check_output(['fd','-a','-t','f',r'\d{2,3}[^.0-9\\]+',top]).decode('utf-8')
     files_list = [ f for f in out_text.split('\n') if f !='' ]

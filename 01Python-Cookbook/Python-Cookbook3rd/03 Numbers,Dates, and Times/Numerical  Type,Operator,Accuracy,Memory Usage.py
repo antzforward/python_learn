@@ -182,7 +182,3 @@ for s in [3,4]:
                                                                                              , second, secondCows
                                                                                              , third, thirdCows))
 
-## 用Fraction来写个24point的玩法来看看，因为Fraction 表示分式 因此加减乘除都是Fraction，那4个初始数字先转成Fraction 最后求值就好了。
-"""
-放以后再玩，有点麻烦了
-"""

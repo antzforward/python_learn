@@ -17,5 +17,8 @@ print(min(prices.items(), key=lambda item: item[1]))
 prices_sorted = sorted(prices.items(),key=lambda item: item[1])
 print( prices_sorted )
 
+prices_sorted = sorted(prices.items(),key=lambda item: item[1],reverse=True)
+print( prices_sorted )
+
 prices_sorted = sorted( prices.items() )
 print( prices_sorted )
