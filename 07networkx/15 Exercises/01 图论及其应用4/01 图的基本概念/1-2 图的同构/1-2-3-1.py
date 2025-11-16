@@ -311,14 +311,17 @@ def draw_fan_Petersen(ax):
          (7, 9)])
     excluded_edges = [(4, 6), (4, 9), (5, 7), (5, 8), (6, 8),
          (7, 9)]
+    mid_rad_edges = [(5,8)]
     big_rad_edges = [(4,9)]
     # 绘制顶点
     nx.draw_networkx_nodes(G, pos=pos, ax=ax, nodelist=g.nodes())
     # 绘制直线边
     nx.draw_networkx_edges(G, pos=pos, edgelist=[edge for edge in g.edges if edge not in excluded_edges ], ax=ax)
     # 绘制曲线边
-    nx.draw_networkx_edges(G, pos=pos, edgelist=[edge for edge in excluded_edges if edge not in big_rad_edges ], ax=ax, arrows=True, connectionstyle='arc3,rad=0.6')
-    nx.draw_networkx_edges(G, pos=pos, edgelist=[edge for edge in big_rad_edges ], ax=ax, arrows=True, connectionstyle='arc3,rad=0.8')
+    nx.draw_networkx_edges(G, pos=pos, edgelist=[edge for edge in excluded_edges if edge not in big_rad_edges and edge not in mid_rad_edges], ax=ax, arrows=True, connectionstyle='arc3,rad=0.55')
+    nx.draw_networkx_edges(G, pos=pos, edgelist=[edge for edge in mid_rad_edges], ax=ax, arrows=True,
+                           connectionstyle='arc3,rad=0.75')
+    nx.draw_networkx_edges(G, pos=pos, edgelist=[edge for edge in big_rad_edges ], ax=ax, arrows=True, connectionstyle='arc3,rad=0.85')
     nx.draw_networkx_labels(g, pos=pos, ax=ax, labels=info)
     # 使用 pad 参数增加标题和子图之间的距离
     ax.set_title('扇子Petersen图', pad=20)
