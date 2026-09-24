@@ -35,7 +35,7 @@ examples = [
     "some.package ~= 7.8.9"
 ]
 
-def _op_ver_check(op, ver, pre_op, pre_ver) -> tuple(bool, bool):
+def _op_ver_check(op, ver, pre_op, pre_ver) -> tuple(str, str):
     # 设置完全
     if op == pre_op and ver == pre_ver:
         return pre_op, pre_ver
@@ -69,7 +69,7 @@ def _op_ver_check(op, ver, pre_op, pre_ver) -> tuple(bool, bool):
                 if '<' in op:
                     larger = min( ver, larger)
                 if '>' in op:
-
+                    larger = max( ver, larger)
             return installed != required
         elif op == ">=":
             return installed < required

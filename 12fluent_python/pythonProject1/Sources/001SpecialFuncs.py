@@ -8,8 +8,9 @@
 ## 下面用了namedtuple形式
 import collections
 
+#自动带来__str__ 以及访问属性的方式
 Card = collections.namedtuple('Card',['rank','suit'])#字符串用单引号比较好
-
+# 刚好凑成一张去掉大小王的扑克牌。52张
 class FrenchDeck:
     # class attribute
     ranks = [str(n) for n in range(2,11)] + list('JQKA')
@@ -26,11 +27,11 @@ class FrenchDeck:
     def __getitem__(self, position):
         return self._cards[position]
 
-
 deck = FrenchDeck()
 print( len(deck )) #52
 print( deck[-1]) #Card(rank='A', suit='hearts')
 from random import  choice
+# 传入的seq 要满足支持__len__ 与__getitem__
 print( choice(deck) )#Card(rank='6', suit='spades')
 print( choice(deck) )#Card(rank='7', suit='clubs')
 print( choice(deck) )#Card(rank='9', suit='spades')
@@ -47,6 +48,7 @@ for card in reversed(deck): # doctest: +ELLIPSIS
 
 print(  Card('Q', 'hearts') in deck  ) #True
 print(  Card('7', 'beasts') in deck  ) #False
+#建立一个map，对应key：value
 suit_values = dict(spades=3, hearts=2, diamonds=1, clubs=0)
 
 def spades_high( card ):
@@ -55,13 +57,16 @@ def spades_high( card ):
     return rank_value * len( suit_values) + suit_values[card.suit]
 
 print( spades_high(choice(deck)) )#6
-
+print('log sorted card:')
+# 完全类似的linq的写法了。
+[print(card) for card in sorted(deck,key=spades_high)] #升序排列
 
 ## 下面是运算符号定义，Vector
 from math import hypot
 class Vector:
     def __init__(self, x=0, y=0):
         self.x,self.y = x,y
+    # 目标是unambiguous ，无疑问
     def __repr__(self):
         return 'Vector(%r,%r)'%(self.x, self.y)
 
@@ -69,7 +74,7 @@ class Vector:
         return hypot( self.x, self.y)
 
     def __bool__(self):
-        return bool(abs(self))
+        return bool(self.x  or  self.y)
 
     def __add__(self, other):
         x = self.x + other.x
@@ -87,6 +92,14 @@ class Vector:
     repr:目标是明确的,但是可能会嵌套，用%r表示
     str：目标是可读，用%s
     容器 str 使用所包含的对象的repr,
+    str的目标是可读性，在没有定义的情况下，用repr
     """
     def __str__(self):
         return 'Vector(%s,%s)'%(self.x, self.y)
+
+
+# str的方式直接调用print 就可以了，然后能看到明显的转字符串了，repr 基本上保持了格式
+print(Vector(1.2,3.4))
+repr(Vector(5.6,7.8)) # 直接不打印在console里面了。
+print('str :%s'%Vector(1.2,3.4))
+print('repr :%r'%Vector(1.2,3.4))
